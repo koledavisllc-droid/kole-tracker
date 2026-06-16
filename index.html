@@ -531,7 +531,8 @@ function applyManualMiles(){
   document.getElementById('mi-manual-entry').value='';
   showToast('Miles applied');
 }
-
+var mapsReady=false;
+function initMaps(){ mapsReady=true; }
 function calcMiles(){
   var from=document.getElementById('mi-from').value.trim();
   var to=document.getElementById('mi-to').value.trim();
@@ -540,42 +541,27 @@ function calcMiles(){
   var btn=document.querySelector('.mi-calcbtn');
   btn.textContent='Calculating...';btn.disabled=true;
 
-  fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      model:'claude-sonnet-4-6',
-      max_tokens:200,
-      messages:[{
-        role:'user',
-        content:'Calculate the approximate driving distance in miles from "'+from+'" to "'+to+'" in Arkansas/Northwest Arkansas area. Respond with ONLY a JSON object like this: {"miles": 12.4} where the number is your best estimate of the one-way driving distance in miles. No other text.'
-      }]
-    })
-  })
-  .then(function(r){return r.json();})
-  .then(function(data){
+  var svc=new google.maps.DistanceMatrixService();
+  svc.getDistanceMatrix({
+    origins:[from],
+    destinations:[to],
+    travelMode:google.maps.TravelMode.DRIVING,
+    unitSystem:google.maps.UnitSystem.IMPERIAL
+  },function(res,status){
     btn.textContent='Calculate Miles';btn.disabled=false;
-    var text=data.content&&data.content[0]&&data.content[0].text;
-    if(text){
-      try{
-        var clean=text.replace(/```json|```/g,'').trim();
-        var parsed=JSON.parse(clean);
-        var miles=parsed.miles;
-        var total=rt?miles*2:miles;
-        document.getElementById('mi-man').value=total.toFixed(1);
-        document.getElementById('mi-val').textContent=total.toFixed(1)+' mi';
-        document.getElementById('mi-lbl-rt').textContent=rt?'round trip':'one way';
-        document.getElementById('mi-ded').textContent='$'+(total*0.67).toFixed(2)+' deduction';
-        document.getElementById('mi-result').style.display='flex';
-        showToast('Miles calculated');
-      }catch(e){
-        alert('Could not parse distance. Try again.');
-      }
+    if(status==='OK'&&res.rows[0].elements[0].status==='OK'){
+      var meters=res.rows[0].elements[0].distance.value;
+      var miles=meters/1609.34;
+      var total=rt?miles*2:miles;
+      document.getElementById('mi-man').value=total.toFixed(1);
+      document.getElementById('mi-val').textContent=total.toFixed(1)+' mi';
+      document.getElementById('mi-lbl-rt').textContent=rt?'round trip':'one way';
+      document.getElementById('mi-ded').textContent='$'+(total*0.67).toFixed(2)+' deduction';
+      document.getElementById('mi-result').style.display='flex';
+      showToast('Miles calculated');
+    }else{
+      alert('Could not calculate. Check the addresses and try again.');
     }
-  })
-  .catch(function(){
-    btn.textContent='Calculate Miles';btn.disabled=false;
-    alert('Connection error. Try again.');
   });
 }
 
@@ -783,6 +769,6 @@ if(!jobs.length){var old=localStorage.getItem('kole-jobs');if(old){jobs=JSON.par
 render();updStats();updMls();rendLB();
 </script>
 
-
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAqUZeSQKUbeo9usEbEWzRcW50jqx1r0YU&callback=initMaps&libraries=places" async defer></script>
 </body>
 </html>
