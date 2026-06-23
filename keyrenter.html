@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KeyRenter Inspections — Kole Davis</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:#8DC63F; --green2:#6fa32d; --dark:#3a3a3a; --dark2:#2a2a2a;
+  --bg:#f4f6f2; --sur:#ffffff; --brd:#e0e6da; --mut:#8a9180; --dan:#e0524a;
+  --txt:#2a2a2a;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--txt); font-family:'Syne',sans-serif; min-height:100vh; }
+
+header { background:var(--dark); padding:18px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.logo { display:flex; align-items:center; gap:10px; }
+.logo-icon { width:32px; height:32px; background:var(--green); border-radius:6px; display:flex; align-items:center; justify-content:center; font-weight:800; color:#fff; font-size:16px; flex-shrink:0; }
+.logo-text { font-size:15px; font-weight:800; color:#fff; letter-spacing:.02em; }
+.logo-text span { color:var(--green); }
+.logo-sub { font-size:10px; color:rgba(255,255,255,.5); text-transform:uppercase; letter-spacing:.08em; margin-top:1px; }
+.hstats { display:flex; gap:24px; flex-wrap:wrap; }
+.hs { text-align:right; }
+.hs-val { font-size:18px; font-weight:800; color:var(--green); font-family:'DM Mono',monospace; }
+.hs-val.gray { color:rgba(255,255,255,.6); }
+.hs-lbl { font-size:10px; color:rgba(255,255,255,.5); text-transform:uppercase; letter-spacing:.1em; }
+
+.layout { display:grid; grid-template-columns:380px 1fr; min-height:calc(100vh - 76px); }
+.fp { border-right:1px solid var(--brd); padding:24px; background:var(--sur); display:flex; flex-direction:column; gap:16px; overflow-y:auto; max-height:calc(100vh - 76px); }
+.ptitle { font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--mut); padding-bottom:10px; border-bottom:1px solid var(--brd); }
+
+.fld { display:flex; flex-direction:column; gap:5px; }
+label { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); }
+input, textarea { background:var(--bg); border:1.5px solid var(--brd); border-radius:6px; color:var(--txt); font-family:'Syne',sans-serif; font-size:14px; padding:10px 12px; outline:none; transition:border-color .15s; width:100%; }
+input:focus, textarea:focus { border-color:var(--green); }
+textarea { resize:vertical; min-height:60px; }
+
+.assign-badge { background:rgba(141,198,63,.1); border:1px solid rgba(141,198,63,.3); border-radius:8px; padding:12px 14px; }
+.assign-badge-title { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--green2); margin-bottom:2px; }
+.assign-badge-sub { font-size:12px; color:var(--mut); }
+
+.price-display { background:var(--bg); border:1px solid var(--brd); border-radius:8px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; }
+.price-main { font-family:'DM Mono',monospace; font-size:28px; font-weight:700; color:var(--green2); }
+.price-sub { text-align:right; }
+.price-yours { font-family:'DM Mono',monospace; font-size:13px; color:var(--green2); }
+.price-lbl { font-size:10px; color:var(--mut); text-transform:uppercase; letter-spacing:.08em; }
+
+.mi-box { background:var(--bg); border:1px solid var(--brd); border-radius:8px; padding:14px; display:flex; flex-direction:column; gap:10px; }
+.mi-row { display:flex; gap:8px; align-items:center; }
+.mi-lbl { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); width:44px; flex-shrink:0; }
+.mi-check { display:flex; align-items:center; gap:8px; }
+.mi-check input { width:16px; height:16px; accent-color:var(--green); flex-shrink:0; }
+.mi-check label { font-size:12px; color:var(--mut); cursor:pointer; text-transform:none; letter-spacing:0; }
+.mi-calc-btn { background:var(--green); border:none; border-radius:6px; color:#fff; cursor:pointer; font-family:'Syne',sans-serif; font-size:12px; font-weight:800; letter-spacing:.06em; padding:10px; text-transform:uppercase; transition:opacity .15s; width:100%; }
+.mi-calc-btn:hover { opacity:.88; }
+.mi-manual-row { display:flex; gap:8px; align-items:center; }
+.mi-apply-btn { background:var(--green); border:none; border-radius:6px; color:#fff; cursor:pointer; font-family:'Syne',sans-serif; font-size:11px; font-weight:800; padding:10px 14px; text-transform:uppercase; letter-spacing:.06em; white-space:nowrap; }
+.mi-result { background:rgba(141,198,63,.08); border:1px solid rgba(141,198,63,.25); border-radius:8px; padding:14px 16px; display:none; }
+.mi-result-miles { font-family:'DM Mono',monospace; font-size:24px; font-weight:700; color:var(--green2); }
+.mi-result-type { font-size:11px; color:var(--mut); margin-top:2px; }
+.mi-result-ded { font-family:'DM Mono',monospace; font-size:16px; color:var(--dark); }
+.mi-result-rate { font-size:10px; color:var(--mut); margin-top:2px; }
+
+.submit-btn { background:var(--green); border:none; border-radius:8px; color:#fff; cursor:pointer; font-family:'Syne',sans-serif; font-size:14px; font-weight:800; letter-spacing:.06em; padding:14px; text-transform:uppercase; transition:opacity .15s,transform .1s; width:100%; }
+.submit-btn:hover { opacity:.9; }
+.submit-btn:active { transform:scale(.98); }
+
+.jp { display:flex; flex-direction:column; overflow:hidden; min-height:calc(100vh - 76px); }
+.report-bar { display:flex; gap:8px; padding:14px 28px; border-bottom:1px solid var(--brd); background:var(--sur); align-items:center; flex-wrap:wrap; }
+.report-bar-lbl { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--mut); margin-right:4px; }
+.report-btn { background:none; border:1.5px solid var(--brd); border-radius:6px; color:var(--mut); cursor:pointer; font-family:'Syne',sans-serif; font-size:11px; font-weight:700; letter-spacing:.06em; padding:8px 16px; text-transform:uppercase; transition:all .15s; }
+.report-btn:hover { border-color:var(--green); color:var(--green2); }
+.report-btn.csv { border-color:var(--green); color:var(--green2); }
+.report-btn.csv:hover { background:rgba(141,198,63,.08); }
+
+.jobs-inner { padding:28px; display:flex; flex-direction:column; gap:18px; overflow-y:auto; flex:1; }
+.jobs-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+.filter-tabs { display:flex; gap:4px; flex-wrap:wrap; }
+.ftab { background:none; border:1.5px solid var(--brd); border-radius:5px; color:var(--mut); cursor:pointer; font-family:'Syne',sans-serif; font-size:10px; font-weight:700; letter-spacing:.06em; padding:6px 12px; text-transform:uppercase; transition:all .15s; }
+.ftab:hover { color:var(--dark); border-color:var(--dark); }
+.ftab.active { background:var(--dark); border-color:var(--dark); color:#fff; }
+
+.jobs-list { display:flex; flex-direction:column; gap:10px; }
+.job-card { background:var(--sur); border:1px solid var(--brd); border-radius:10px; padding:16px 18px; display:grid; grid-template-columns:1fr auto; gap:5px 14px; align-items:start; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+.job-card.unpaid { border-color:rgba(224,82,74,.35); background:rgba(224,82,74,.03); }
+.job-card.mileage-card { border-left:3px solid var(--green); }
+.job-top { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.job-badge { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:3px 8px; border-radius:4px; background:rgba(141,198,63,.12); color:var(--green2); }
+.job-badge.mileage { background:rgba(58,58,58,.08); color:var(--mut); }
+.badge-unpaid { background:rgba(224,82,74,.12); color:var(--dan); font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:3px 8px; border-radius:4px; border:1px solid rgba(224,82,74,.3); }
+.job-addr { font-size:13px; font-weight:700; color:var(--dark); margin-top:2px; }
+.job-notes { font-size:12px; color:var(--mut); margin-top:4px; }
+.job-right { display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+.job-date-row { display:flex; align-items:center; gap:8px; }
+.job-date { font-size:11px; color:var(--mut); font-family:'DM Mono',monospace; white-space:nowrap; }
+.job-del { background:none; border:none; color:var(--mut); cursor:pointer; font-size:16px; padding:0 0 0 6px; line-height:1; transition:color .15s; }
+.job-del:hover { color:var(--dan); }
+.job-price { font-family:'DM Mono',monospace; font-size:20px; font-weight:700; color:var(--green2); }
+.job-price.miles { color:var(--dark); }
+.job-sub { font-family:'DM Mono',monospace; font-size:11px; color:var(--mut); margin-top:2px; }
+.flag-btn { background:none; border:1px solid var(--brd); border-radius:5px; color:var(--mut); cursor:pointer; font-size:10px; font-weight:700; letter-spacing:.06em; padding:4px 8px; text-transform:uppercase; transition:all .15s; font-family:'Syne',sans-serif; margin-top:4px; }
+.flag-btn:hover { border-color:var(--dan); color:var(--dan); }
+.paid-btn { background:none; border:1px solid rgba(141,198,63,.4); border-radius:5px; color:var(--green2); cursor:pointer; font-size:10px; font-weight:700; letter-spacing:.06em; padding:4px 8px; text-transform:uppercase; transition:all .15s; font-family:'Syne',sans-serif; margin-top:4px; }
+.paid-btn:hover { background:rgba(141,198,63,.1); }
+
+.empty { text-align:center; padding:50px 20px; color:var(--mut); }
+.empty-icon { font-size:32px; margin-bottom:10px; opacity:.4; }
+.empty-txt { font-size:13px; }
+
+.toast { position:fixed; bottom:24px; right:24px; background:var(--green); color:#fff; font-size:13px; font-weight:700; padding:12px 20px; border-radius:8px; opacity:0; transform:translateY(8px); transition:all .25s; pointer-events:none; z-index:999; letter-spacing:.04em; box-shadow:0 4px 12px rgba(0,0,0,.15); }
+.toast.show { opacity:1; transform:translateY(0); }
+
+@media(max-width:800px) {
+  .layout { grid-template-columns:1fr; }
+  .fp { border-right:none; border-bottom:1px solid var(--brd); max-height:none; }
+  .hstats { gap:14px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">K</div>
+    <div>
+      <div class="logo-text">Key<span>renter</span> Inspections</div>
+      <div class="logo-sub">Kole Davis · Independent Contractor</div>
+    </div>
+  </div>
+  <div class="hstats">
+    <div class="hs"><div class="hs-val" id="stat-jobs">0</div><div class="hs-lbl">Inspections</div></div>
+    <div class="hs"><div class="hs-val" id="stat-rev">$0</div><div class="hs-lbl">Total Earned</div></div>
+    <div class="hs"><div class="hs-val gray" id="stat-unp">$0</div><div class="hs-lbl">Unpaid</div></div>
+    <div class="hs"><div class="hs-val" id="stat-mi">0 mi</div><div class="hs-lbl">Total Miles</div></div>
+    <div class="hs"><div class="hs-val gray" id="stat-ded">$0</div><div class="hs-lbl">Est. Tax Deduction</div></div>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- FORM -->
+  <div class="fp">
+    <div class="ptitle">Log an Inspection</div>
+
+    <div class="assign-badge">
+      <div class="assign-badge-title">Assigned by Jeff</div>
+      <div class="assign-badge-sub">$100 per inspection · 100% yours, no split</div>
+    </div>
+
+    <div class="fld">
+      <label>Property Address</label>
+      <input type="text" id="insp-address" placeholder="e.g. 520 W. Maple St, Fayetteville" oninput="document.getElementById('mi-to').value=this.value">
+    </div>
+    <div class="fld">
+      <label>Inspection Date</label>
+      <input type="date" id="insp-date">
+    </div>
+    <div class="fld">
+      <label>Amount ($)</label>
+      <input type="number" id="insp-amount" value="100" min="0" oninput="updatePriceDisplay()">
+    </div>
+    <div class="price-display">
+      <div class="price-main" id="price-total">$100</div>
+      <div class="price-sub">
+        <div class="price-yours" id="price-yours">$100 yours</div>
+        <div class="price-lbl">no split</div>
+      </div>
+    </div>
+    <div class="fld">
+      <label>Notes (optional)</label>
+      <textarea id="insp-notes" placeholder="e.g. Crawl space issue noted, reported to Jeff"></textarea>
+    </div>
+
+    <!-- MILEAGE -->
+    <div class="fld">
+      <label>Mileage (optional)</label>
+      <div class="mi-box">
+        <div class="mi-row">
+          <span class="mi-lbl">From</span>
+          <input type="text" id="mi-from" placeholder="e.g. Home">
+        </div>
+        <div class="mi-row">
+          <span class="mi-lbl">To</span>
+          <input type="text" id="mi-to" placeholder="Auto-fills from address above">
+        </div>
+        <div class="mi-check">
+          <input type="checkbox" id="mi-rt" checked>
+          <label for="mi-rt">Round trip</label>
+        </div>
+        <button class="mi-calc-btn" onclick="calcMiles()">Calculate Miles</button>
+        <div class="mi-manual-row">
+          <input type="number" id="mi-manual" placeholder="Or enter miles manually" min="0" step="0.1" style="flex:1">
+          <button class="mi-apply-btn" onclick="applyManualMiles()">Apply</button>
+        </div>
+        <input type="hidden" id="mi-saved">
+        <div class="mi-result" id="mi-result">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div class="mi-result-miles" id="mi-result-miles">0 mi</div>
+              <div class="mi-result-type" id="mi-result-type">one way</div>
+            </div>
+            <div style="text-align:right">
+              <div class="mi-result-ded" id="mi-result-ded">$0.00</div>
+              <div class="mi-result-rate">est. deduction @ $0.725/mi</div>
+            </div>
+          </div>
+        </div>
+        <button onclick="clearMileageForm()" id="mi-clear-btn" style="background:none;border:none;color:var(--mut);cursor:pointer;font-size:11px;font-family:'Syne',sans-serif;text-align:left;padding:0;" hidden>✕ Clear miles</button>
+      </div>
+    </div>
+
+    <button class="submit-btn" onclick="logInspection()">Log Inspection</button>
+  </div>
+
+  <!-- JOBS -->
+  <div class="jp">
+    <div class="report-bar">
+      <span class="report-bar-lbl">Reports:</span>
+      <button class="report-btn" onclick="generateReport('monthly')">Monthly</button>
+      <button class="report-btn" onclick="generateReport('yearly')">Yearly</button>
+      <button class="report-btn csv" onclick="exportCSV()">Export CSV</button>
+    </div>
+    <div class="jobs-inner">
+      <div class="jobs-header">
+        <div class="ptitle" style="border:none;padding:0">Inspection History</div>
+        <div class="filter-tabs">
+          <button class="ftab active" onclick="setFilter('all',this)">All</button>
+          <button class="ftab" onclick="setFilter('unpaid',this)">Unpaid</button>
+        </div>
+      </div>
+      <div class="jobs-list" id="jobs-list">
+        <div class="empty"><div class="empty-icon">🔑</div><div class="empty-txt">No inspections logged yet.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var jobs = JSON.parse(localStorage.getItem('keyrenter-jobs') || '[]');
+var activeFilter = 'all';
+
+document.getElementById('insp-date').valueAsDate = new Date();
+
+var mapsReady = false;
+function initMaps() { mapsReady = true; }
+
+function updatePriceDisplay() {
+  var amt = parseFloat(document.getElementById('insp-amount').value) || 100;
+  document.getElementById('price-total').textContent = '$' + amt.toFixed(0);
+  document.getElementById('price-yours').textContent = '$' + amt.toFixed(2) + ' yours';
+}
+
+function showMileResult(miles, rt) {
+  document.getElementById('mi-saved').value = miles.toFixed(1);
+  document.getElementById('mi-result-miles').textContent = miles.toFixed(1) + ' mi';
+  document.getElementById('mi-result-type').textContent = rt ? 'round trip' : 'one way';
+  document.getElementById('mi-result-ded').textContent = '$' + (miles * 0.725).toFixed(2) + ' deduction';
+  document.getElementById('mi-result').style.display = 'block';
+  document.getElementById('mi-clear-btn').hidden = false;
+}
+
+function calcMiles() {
+  var from = document.getElementById('mi-from').value.trim();
+  var to = document.getElementById('mi-to').value.trim();
+  if (!from || !to) { alert('Enter both a starting point and destination.'); return; }
+  var rt = document.getElementById('mi-rt').checked;
+  var btn = document.querySelector('.mi-calc-btn');
+  btn.textContent = 'Calculating...'; btn.disabled = true;
+  if (!mapsReady) {
+    setTimeout(function() {
+      btn.textContent = 'Calculate Miles'; btn.disabled = false;
+      if (mapsReady) { calcMiles(); }
+      else { alert('Google Maps is still loading. Please wait a moment and try again.'); }
+    }, 2000); return;
+  }
+  new google.maps.DistanceMatrixService().getDistanceMatrix({
+    origins: [from], destinations: [to],
+    travelMode: google.maps.TravelMode.DRIVING,
+    unitSystem: google.maps.UnitSystem.IMPERIAL
+  }, function(res, status) {
+    btn.textContent = 'Calculate Miles'; btn.disabled = false;
+    if (status === 'OK' && res.rows[0].elements[0].status === 'OK') {
+      var miles = res.rows[0].elements[0].distance.value / 1609.34;
+      showMileResult(rt ? miles * 2 : miles, rt);
+    } else { alert('Could not calculate. Check the addresses and try again.'); }
+  });
+}
+
+function applyManualMiles() {
+  var val = parseFloat(document.getElementById('mi-manual').value);
+  if (isNaN(val) || val <= 0) { alert('Enter a valid number of miles.'); return; }
+  var rt = document.getElementById('mi-rt').checked;
+  showMileResult(rt ? val * 2 : val, rt);
+  document.getElementById('mi-manual').value = '';
+}
+
+function clearMileageForm() {
+  document.getElementById('mi-from').value = '';
+  document.getElementById('mi-to').value = '';
+  document.getElementById('mi-manual').value = '';
+  document.getElementById('mi-saved').value = '';
+  document.getElementById('mi-result').style.display = 'none';
+  document.getElementById('mi-clear-btn').hidden = true;
+  document.getElementById('mi-rt').checked = true;
+}
+
+function logInspection() {
+  var address = document.getElementById('insp-address').value.trim();
+  var date = document.getElementById('insp-date').value;
+  var amount = parseFloat(document.getElementById('insp-amount').value) || 100;
+  var notes = document.getElementById('insp-notes').value.trim();
+  var miles = parseFloat(document.getElementById('mi-saved').value) || 0;
+
+  if (!address) { alert('Enter a property address.'); return; }
+  if (!date) { alert('Pick a date.'); return; }
+
+  var job = {
+    id: Date.now(), address: address, date: date,
+    price: amount, notes: notes, unpaid: false, miles: miles
+  };
+
+  jobs.unshift(job);
+  save();
+  resetForm();
+  render();
+  updateStats();
+  showToast('Inspection logged ✓');
+}
+
+function resetForm() {
+  document.getElementById('insp-address').value = '';
+  document.getElementById('insp-notes').value = '';
+  document.getElementById('insp-amount').value = '100';
+  document.getElementById('insp-date').valueAsDate = new Date();
+  clearMileageForm();
+  updatePriceDisplay();
+}
+
+function deleteJob(id) {
+  jobs = jobs.filter(function(j) { return j.id !== id; });
+  save(); render(); updateStats();
+}
+
+function flagUnpaid(id) {
+  jobs = jobs.map(function(j) { return j.id === id ? Object.assign({}, j, { unpaid: true }) : j; });
+  save(); render(); updateStats();
+}
+
+function markPaid(id) {
+  jobs = jobs.map(function(j) { return j.id === id ? Object.assign({}, j, { unpaid: false }) : j; });
+  save(); render(); updateStats();
+  showToast('Marked as paid ✓');
+}
+
+function clearJobMiles(id) {
+  jobs = jobs.map(function(j) { return j.id === id ? Object.assign({}, j, { miles: 0 }) : j; });
+  save(); render(); updateStats();
+  showToast('Miles cleared');
+}
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.ftab').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  render();
+}
+
+function render() {
+  var list = document.getElementById('jobs-list');
+  var filtered = activeFilter === 'unpaid' ? jobs.filter(function(j) { return j.unpaid; }) : jobs;
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">🔑</div><div class="empty-txt">' +
+      (activeFilter === 'unpaid' ? 'No unpaid inspections.' : 'No inspections logged yet.') + '</div></div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(function(j) {
+    var dateStr = new Date(j.date + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    var milesTag = (j.miles && j.miles > 0)
+      ? '<div class="job-sub">' + j.miles.toFixed(1) + ' mi · $' + (j.miles*0.725).toFixed(2) + ' deduction <button onclick="clearJobMiles(' + j.id + ')" style="background:none;border:none;color:var(--dan);cursor:pointer;font-size:11px;font-weight:700;padding:0 0 0 4px;">✕</button></div>'
+      : '';
+    var actionBtn = j.unpaid
+      ? '<button class="paid-btn" onclick="markPaid(' + j.id + ')">Mark Paid</button>'
+      : '<button class="flag-btn" onclick="flagUnpaid(' + j.id + ')">Flag Unpaid</button>';
+
+    return '<div class="job-card' + (j.unpaid ? ' unpaid' : '') + '">' +
+      '<div>' +
+        '<div class="job-top">' +
+          '<span class="job-badge">Inspection</span>' +
+          (j.unpaid ? '<span class="badge-unpaid">Unpaid</span>' : '') +
+        '</div>' +
+        '<div class="job-addr">' + j.address + '</div>' +
+        (j.notes ? '<div class="job-notes">' + j.notes + '</div>' : '') +
+      '</div>' +
+      '<div class="job-right">' +
+        '<div class="job-date-row">' +
+          '<div class="job-date">' + dateStr + '</div>' +
+          '<button class="job-del" onclick="deleteJob(' + j.id + ')">×</button>' +
+        '</div>' +
+        '<div>' +
+          '<div class="job-price">$' + j.price.toFixed(0) + '</div>' +
+          milesTag +
+        '</div>' +
+        actionBtn +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function updateStats() {
+  var total = jobs.reduce(function(s, j) { return s + j.price; }, 0);
+  var unpaid = jobs.filter(function(j) { return j.unpaid; }).reduce(function(s, j) { return s + j.price; }, 0);
+  var miles = jobs.reduce(function(s, j) { return s + (j.miles || 0); }, 0);
+  var taxSetAside = total * 0.15;
+  var mileDeduction = miles * 0.725;
+
+  document.getElementById('stat-jobs').textContent = jobs.length;
+  document.getElementById('stat-rev').textContent = '$' + total.toFixed(0);
+  document.getElementById('stat-unp').textContent = '$' + unpaid.toFixed(0);
+  document.getElementById('stat-mi').textContent = miles.toFixed(1) + ' mi';
+  document.getElementById('stat-ded').textContent = '$' + mileDeduction.toFixed(0);
+}
+
+function save() { localStorage.setItem('keyrenter-jobs', JSON.stringify(jobs)); }
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2200);
+}
+
+function exportCSV() {
+  if (!jobs.length) { alert('No inspections to export.'); return; }
+  var header = 'Date,Address,Amount,Miles,Mileage Deduction,Status,Notes';
+  var rows = jobs.map(function(j) {
+    return [
+      j.date,
+      '"' + j.address.replace(/"/g, '""') + '"',
+      j.price.toFixed(2),
+      (j.miles || 0).toFixed(1),
+      ((j.miles||0)*0.725).toFixed(2),
+      j.unpaid ? 'Unpaid' : 'Paid',
+      '"' + (j.notes || '').replace(/"/g, '""') + '"'
+    ].join(',');
+  });
+  var csv = [header].concat(rows).join('\n');
+  var blob = new Blob([csv], { type:'text/csv' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'KeyRenter_Inspections_' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast('CSV exported ✓');
+}
+
+function generateReport(type) {
+  var now = new Date();
+  var s, e, lbl;
+  if (type === 'yearly') {
+    s = new Date(now.getFullYear(), 0, 1);
+    e = new Date(now.getFullYear(), 11, 31);
+    lbl = now.getFullYear().toString();
+  } else {
+    s = new Date(now.getFullYear(), now.getMonth(), 1);
+    e = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    lbl = now.toLocaleDateString('en-US', { month:'long', year:'numeric' });
+  }
+
+  var filtered = jobs.filter(function(j) {
+    var d = new Date(j.date + 'T12:00:00');
+    return d >= s && d <= e;
+  });
+
+  var totalRev = filtered.reduce(function(x, j) { return x + j.price; }, 0);
+  var totalMi = filtered.reduce(function(x, j) { return x + (j.miles || 0); }, 0);
+  var rn = type === 'monthly' ? 'Monthly' : 'Annual';
+
+  var jRows = filtered.map(function(j) {
+    var d = new Date(j.date + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    return '<tr><td>' + d + '</td><td>' + j.address + '</td>' +
+      '<td style="text-align:right;font-family:DM Mono,monospace">$' + j.price.toFixed(2) + '</td>' +
+      '<td style="text-align:right;font-family:DM Mono,monospace">' + (j.miles ? j.miles.toFixed(1) + ' mi' : '-') + '</td>' +
+      '<td>' + (j.unpaid ? 'Unpaid' : 'Paid') + '</td></tr>';
+  }).join('');
+
+  var html = '<!DOCTYPE html><html><head><title>KeyRenter Inspections - ' + rn + ' Report</title>' +
+    '<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">' +
+    '<style>body{font-family:Syne,sans-serif;padding:36px;max-width:760px;margin:0 auto;color:#2a2a2a}.rh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;padding-bottom:14px;border-bottom:3px solid #8DC63F}.rt{font-size:24px;font-weight:800}.rs{font-size:13px;color:#8a9180;margin-top:3px}.rm{text-align:right;font-size:12px;color:#8a9180;line-height:1.8}.sg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:24px}.sb{border:1px solid #e0e6da;border-radius:8px;padding:14px}.sl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8a9180;margin-bottom:5px}.sv{font-size:22px;font-weight:800;font-family:"DM Mono",monospace;color:#6fa32d}table{width:100%;border-collapse:collapse;margin-bottom:24px}th{background:#3a3a3a;color:#fff;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:7px 9px;text-align:left}td{padding:8px 9px;font-size:12px;border-bottom:1px solid #f0f0f0}.ft{margin-top:28px;font-size:10px;color:#aaa;border-top:1px solid #eee;padding-top:10px;font-style:italic}.pb{margin-top:14px;background:#3a3a3a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:Syne,sans-serif;font-size:12px;font-weight:700;padding:9px 18px;text-transform:uppercase;letter-spacing:.08em}@media print{.pb{display:none}}</style></head><body>' +
+    '<div class="rh"><div><div class="rt">KeyRenter Property Management</div><div class="rs">' + rn + ' Inspection Report · ' + lbl + '</div><div class="rs">Kole Davis — Independent Contractor</div></div>' +
+    '<div class="rm"><div><strong>Generated:</strong> ' + now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) + '</div><div><strong>Total Inspections:</strong> ' + filtered.length + '</div></div></div>' +
+    '<div class="sg"><div class="sb"><div class="sl">Total Earned</div><div class="sv">$' + totalRev.toFixed(2) + '</div></div>' +
+    '<div class="sb"><div class="sl">Miles Driven</div><div class="sv">' + totalMi.toFixed(1) + ' mi</div></div>' +
+    '<div class="sb"><div class="sl">Mileage Deduction</div><div class="sv">$' + (totalMi*0.725).toFixed(2) + '</div></div></div>' +
+    (filtered.length
+      ? '<table><thead><tr><th>Date</th><th>Address</th><th style="text-align:right">Amount</th><th style="text-align:right">Miles</th><th>Status</th></tr></thead><tbody>' + jRows + '</tbody></table>'
+      : '<p style="color:#888;font-style:italic">No inspections found for this period.</p>') +
+    '<div class="ft">Kole Davis · 502-807-1919 · koledavisllc@gmail.com</div>' +
+    '<button class="pb" onclick="window.print()">Print / Save as PDF</button></body></html>';
+
+  var w = window.open('', '_blank');
+  w.document.write(html); w.document.close(); window.blur(); w.focus();
+}
+
+render();
+updateStats();
+updatePriceDisplay();
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAqUZeSQKUbeo9usEbEWzRcW50jqx1r0YU&callback=initMaps&libraries=places" async defer></script>
+</body>
+</html>
