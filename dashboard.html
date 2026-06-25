@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kole Davis LLC — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f0f0f;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      color: #fff;
+    }
+
+    /* Subtle grain texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 860px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .monogram {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #c8a96e 0%, #e8c98a 50%, #c8a96e 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      box-shadow: 0 0 40px rgba(200, 169, 110, 0.25);
+    }
+
+    .monogram span {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #0f0f0f;
+      letter-spacing: -1px;
+    }
+
+    .header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 13px;
+      font-weight: 400;
+      color: #666;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #2a2a2a, transparent);
+    }
+
+    .divider-diamond {
+      width: 6px;
+      height: 6px;
+      background: #c8a96e;
+      transform: rotate(45deg);
+    }
+
+    /* Cards grid */
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .cards { grid-template-columns: 1fr; }
+      .header h1 { font-size: 28px; }
+    }
+
+    .card {
+      background: #171717;
+      border: 1px solid #222;
+      border-radius: 16px;
+      padding: 36px 32px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: #333;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--accent-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .card-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    .card-arrow {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.5px;
+      opacity: 0;
+      transform: translateX(-4px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .card:hover .card-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Card 1 — Collier */
+    .card-collier {
+      --accent: #CC2229;
+      --accent-bg: rgba(204, 34, 41, 0.1);
+    }
+
+    /* Card 2 — KeyRenter */
+    .card-keyrenter {
+      --accent: #8DC63F;
+      --accent-bg: rgba(141, 198, 63, 0.1);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 48px;
+      font-size: 11px;
+      color: #333;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="header">
+      <div class="monogram"><span>KD</span></div>
+      <h1>Kole Davis LLC</h1>
+      <p>Business Dashboard</p>
+    </div>
+
+    <div class="divider"><div class="divider-diamond"></div></div>
+
+    <div class="cards">
+
+      <!-- Collier Tracker -->
+      <a class="card card-collier" href="https://koledavisllc-droid.github.io/kole-tracker/" target="_blank" rel="noopener">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#CC2229" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8M12 17v4"/>
+            <path d="M6 8h4M6 11h8"/>
+          </svg>
+        </div>
+        <div class="card-label">Collier & Associates</div>
+        <div class="card-title">Agent Support Tracker</div>
+        <div class="card-desc">Log jobs, generate invoices, track mileage, and view agent leaderboard.</div>
+        <div class="card-arrow">
+          Open Tracker
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </a>
+
+      <!-- KeyRenter Tracker -->
+      <a class="card card-keyrenter" href="https://koledavisllc-droid.github.io/kole-tracker/keyrenter.html" target="_blank" rel="noopener">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#8DC63F" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <div class="card-label">KeyRenter Property Management</div>
+        <div class="card-title">Inspection Tracker</div>
+        <div class="card-desc">Log property inspections, track mileage, and generate monthly reports.</div>
+        <div class="card-arrow">
+          Open Tracker
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </a>
+
+    </div>
+
+    <div class="footer">
+      502-807-1919 &nbsp;·&nbsp; koledavisllc@gmail.com
+    </div>
+
+  </div>
+</body>
+</html>
